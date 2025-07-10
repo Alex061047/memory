@@ -1,8 +1,8 @@
 <?php
-// Démarre une session pour stocker les messages et l'identité de l'utilisateur
+// Démarre une session (stock identité))
 session_start();
 
-// Inclusion de la connexion PDO et de la classe Utilisateur
+// Inclusion de la connexion PDO et la classe Utilisateur
 require_once __DIR__ . '/../Modele/db_connection.php';
 require_once __DIR__ . '/../Modele/Classes/Utilisateur.php';
 
@@ -32,7 +32,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
   exit;
 }
 
-// Gère les deux cas : inscription ou connexion
+// Gestion inscription ou connexion
 if ($action === 'inscription') {
   // Vérifie si l'utilisateur existe déjà
   $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE email = ?");
@@ -60,24 +60,24 @@ if ($action === 'inscription') {
   $user = $utilisateur->seConnecter($email, $mot_de_passe);
 
   if ($user) {
-    // Authentification réussie : stockage des infos utiles en session
-    $_SESSION['user'] = [
-      'id' => $user['id'],
-      'email' => $user['email'],
-      'role' => $user['role']
-    ];
-    header('Location: ../index.php');
-    exit;
-
+    // Authentification réussie
+  $_SESSION['user'] = [
+    'id' => $user['id'],
+    'email' => $user['email'],
+    'role' => $user['role']
+  ];
+  
+  if ($user['role'] === 'admin') {
+    header('Location: ../Vue/admin.php');
   } else {
-    // Identifiants incorrects
-    $_SESSION['message'] = "Email ou mot de passe incorrect.";
     header('Location: ../index.php');
-    exit;
   }
+  exit;
+}
+
 
 } else {
-  // Action inconnue (fail-safe)
+  // Action inconnue
   $_SESSION['message'] = "Action non reconnue.";
   header('Location: ../index.php');
   exit;

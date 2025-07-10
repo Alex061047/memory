@@ -1,111 +1,110 @@
-// --- Liste des cartes utilisées (8 paires uniques) ---
-const cards = [
-  'https://picsum.photos/id/237/100/100', 
-  'https://picsum.photos/id/238/100/100',
-  'https://picsum.photos/id/239/100/100',
-  'https://picsum.photos/id/240/100/100',
-  'https://picsum.photos/id/241/100/100',
-  'https://picsum.photos/id/242/100/100',
-  'https://picsum.photos/id/243/100/100',
-  'https://picsum.photos/id/244/100/100'
-];
-
-// Récupère le conteneur du plateau de jeu
+// Sélection du plateau de jeu
 const gameBoard = document.getElementById('game-board');
+let cartesSelection = []; // Tableau temporaire
 
-// Tableau temporaire des cartes sélectionnées
-let cartesSelection = [];
+// Création des paires
+function double(cartes) {
+  let jeudouble = [];
+  cartes.forEach(url => {
+    jeudouble.push(url);
+    jeudouble.push(url);
+  });
+  return jeudouble;
+}
 
-/**
- * Crée une carte à partir d'une URL d'image.
- */
-function createCard(CardUrl) {
+// Mélange le jeu de cartes
+ 
+function melange(jeu) {
+  return jeu.sort(() => 0.5 - Math.random());
+}
+
+// Crée l’élément HTML d'une carte
+ 
+function createCard(url) {
   const card = document.createElement('div');
   card.classList.add('card');
-  card.dataset.value = CardUrl;
+  card.dataset.value = url;
   card.addEventListener("click", click);
 
-  const cardContent = document.createElement('img');
-  cardContent.classList.add('card-content');
-  cardContent.src = `${CardUrl}`;
-  card.appendChild(cardContent);
+  const img = document.createElement('img');
+  img.classList.add('card-content');
+  img.src = url;
+  card.appendChild(img);
 
   return card;
 }
 
-/**
- * Duplique le tableau de cartes pour avoir des paires.
- */
-function double(simple) {
-  let jeudouble = [];
-  jeudouble.push(...simple);
-  jeudouble.push(...simple);
-  return jeudouble;
-}
-
-/**
- * Mélange les cartes aléatoirement.
- */
-function melange(carteMelange) {
-  const jeuMelange = carteMelange.sort(() => 0.5 - Math.random());
-  return jeuMelange;
-}
-
-/**
- * Gère le clic sur une carte.
- */
+// Gestion du clic
+ 
 function click(e) {
-  const card = e.target.parentElement;
-  card.classList.add("flip");
+  const card = e.target.closest('.card');
 
+  // Ne rien faire si déjà retournée ou trouvée
+  if (card.classList.contains('flip') || card.classList.contains('matched')) return;
+
+  // Retourne la carte
+  card.classList.add("flip");
   cartesSelection.push(card);
 
-  // Lorsqu'on a sélectionné 2 cartes, on les compare
-  if (cartesSelection.length == 2) {
+  //Si deux cartes sont retournées
+  if (cartesSelection.length === 2) {
     setTimeout(() => {
-      if (cartesSelection[0].dataset.value === cartesSelection[1].dataset.value) {
-        // Bonne paire
-        cartesSelection[0].classList.add("matched");
-        cartesSelection[1].classList.add("matched");
-        cartesSelection[0].removeEventListener('click', click);
-        cartesSelection[1].removeEventListener('click', click);
+      const [c1, c2] = cartesSelection;
 
-        // Vérifie s’il reste des cartes à retourner
+      if (c1.dataset.value === c2.dataset.value) {
+        // Marque comme trouvée
+        c1.classList.add("matched");
+        c2.classList.add("matched");
+        // Supprime l'écouteur de clic
+        c1.removeEventListener("click", click);
+        c2.removeEventListener("click", click);
+
+        // Vérifier s'il reste des cartes
         const reste = document.querySelectorAll('.card:not(.matched)');
         if (reste.length === 0) {
-          // Fin de partie
-          let body = document.body;
+          arreterTimer();
+          enregistrerTempsSiRecord();
+
+          // Affiche message
           let message = document.createElement('h1');
           message.textContent = "Bravo !";
-          body.prepend(message);
-
-          // Stoppe le chronomètre
-          arreterTimer();
-
-          // Envoie du score uniquement si connecté
-          enregistrerTempsSiRecord(); // ← Appelle le timer.js
+          document.body.prepend(message);
         }
-      } else {
-        // Mauvaise paire → retourne les cartes
-        cartesSelection[0].classList.remove("flip");
-        cartesSelection[1].classList.remove("flip");
+      } 
+      // Si ce n'est pas une paire
+      else {
+        c1.classList.remove("flip");
+        c2.classList.remove("flip");
       }
 
-      // Réinitialise la sélection
       cartesSelection = [];
     }, 500);
   }
 }
 
-// Création du jeu
-let ensemble = melange(double(cards));
+// Charge les images depuis la base de données et initialise le jeu
+ 
+function chargerImagesDepuisBDD() {
+  fetch('Modele/get_images.php')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.images.length > 0) {
+        const urls = data.images.map(img => img.url);
+        const jeu = melange(double(urls));
 
-// Ajoute les cartes sur le plateau
-ensemble.forEach(card => {
-  const cardHtml = createCard(card);
-  gameBoard.appendChild(cardHtml);
-});
+        jeu.forEach(url => {
+          const carte = createCard(url);
+          gameBoard.appendChild(carte);
+        });
 
-// Lance le jeu si connecté
-chargerMeilleurTemps();  // Affiche le meilleur temps (depuis timer.js)
-demarrerTimer();          // Démarre le chronomètre
+        chargerMeilleurTemps(); // Affiche meilleur score
+        demarrerTimer();        // Lance le chrono
+      } else {
+        console.error("Aucune image reçue.");
+      }
+    })
+    .catch(err => console.error("Erreur AJAX :", err));
+}
+
+// Au chargement de la page
+document.addEventListener('DOMContentLoaded', chargerImagesDepuisBDD);

@@ -1,7 +1,8 @@
 <?php
+// Démarre la session PHP
 session_start();
 
-// Récupération d’un message d’erreur si présent (ex: mauvaise connexion)
+// Récupération d’un message d’erreur 
 $message = $_SESSION['message'] ?? '';
 unset($_SESSION['message']);
 ?>
@@ -17,6 +18,14 @@ unset($_SESSION['message']);
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
+
+<?php
+// Si l’utilisateur est connecté ET est admin, affichage admin.php
+if (isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin') {
+    include 'Vue/admin.php';
+    exit;
+}
+?>
 
   <!-- Titre du jeu -->
   <h1>Memory Game</h1>
@@ -38,7 +47,7 @@ unset($_SESSION['message']);
     <?php endif; ?>
   </section>
 
-  <!-- Timer + Score -->
+  <!-- Timer et Score -->
 <div class="text-center mt-4">
   <h3 id="timer">Temps : 0s</h3>
   <h4 id="meilleur-score" class="text-success"></h4>

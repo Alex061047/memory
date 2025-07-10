@@ -1,13 +1,10 @@
-// timer.js
-
 // Variables globales du timer
 let startTime = null;
 let timerInterval = null;
 let tempsFinal = 0;
 
-/**
- * Démarre le chronomètre à partir du moment où la partie commence.
- */
+// Démarre le chronomètre
+
 function demarrerTimer() {
   startTime = Date.now(); // Stocke l'heure de début
   timerInterval = setInterval(() => {
@@ -19,18 +16,15 @@ function demarrerTimer() {
   }, 1000);
 }
 
-/**
- * Arrête le chronomètre et stocke le temps final écoulé.
- */
+// Arrête le chronomètre et stocke le temps final écoulé.
+ 
 function arreterTimer() {
   clearInterval(timerInterval);
   tempsFinal = Math.floor((Date.now() - startTime) / 1000);
 }
 
-/**
- * Enregistre le score du joueur si c'est un nouveau record.
- * Cette fonction est appelée à la fin de la partie.
- */
+// Enregistre le score du joueur si c'est un nouveau record.
+ 
 function enregistrerTempsSiRecord() {
   fetch('Modele/score.php', {
     method: 'POST',
@@ -51,9 +45,8 @@ function enregistrerTempsSiRecord() {
     });
 }
 
-/**
- * Recharge le meilleur score depuis le serveur et l'affiche.
- */
+// Recharge le meilleur score depuis le serveur et l'affiche.
+ 
 function chargerMeilleurTemps() {
   fetch('Modele/get_meilleur_score.php')
     .then(response => response.json())

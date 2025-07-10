@@ -2,7 +2,7 @@
 class Utilisateur {
   private $pdo;
 
-  // Constructeur injection de la connexion PDO
+  // Constructeur connexion PDO
   public function __construct($pdo) {
     $this->pdo = $pdo;
   }
@@ -16,7 +16,7 @@ class Utilisateur {
     // Récupération de l'utilisateur
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Vérification du mot de passe avec password_verify (hachage sécurisé)
+    // Vérification du mot de passe avec password_verify
     if ($user && password_verify($mot_de_passe, $user['mot_de_passe'])) {
       return $user;
     }
