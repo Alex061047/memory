@@ -1,3 +1,29 @@
+// Fonction asynchrone pour récupèrer le token CSRF
+async function getCsrfToken() {
+  const response = await fetch('Modele/token.php');
+  const data = await response.json(); 
+  return data.token; 
+}
+
+// Fonction pour envoyer un score au serveur en incluant le token CSRF
+async function envoyerScore(temps) {
+  const token = await getCsrfToken(); // Récupération du token CSRF
+
+  // Envoi de la requête POST 
+  const reponse = await fetch('Modele/score.php', {
+    method: 'POST', // Méthode POST pour modifier les données côté serveur
+    headers: {
+      'Content-Type': 'application/json' 
+    },
+    body: JSON.stringify({ temps, csrf_token: token })
+  });
+
+  // On récupère la réponse JSON du serveur et on affiche le message
+  const donnees = await reponse.json();
+  console.log(donnees.message);
+}
+
+
 // Sélection du plateau de jeu
 const gameBoard = document.getElementById('game-board');
 let cartesSelection = []; // Tableau temporaire
