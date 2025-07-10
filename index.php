@@ -38,10 +38,18 @@ unset($_SESSION['message']);
     <?php endif; ?>
   </section>
 
+  <!-- Timer + Score -->
+<div class="text-center mt-4">
+  <h3 id="timer">Temps : 0s</h3>
+  <h4 id="meilleur-score" class="text-success"></h4>
+</div>
+
   <!-- Plateau de jeu -->
   <div id="game-board"></div>
 
   <!-- Script principal -->
+  <script src="Controleur/timer.js"></script>
   <script src="Controleur/script.js"></script>
+  
 </body>
 </html>
